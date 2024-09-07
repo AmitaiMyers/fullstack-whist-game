@@ -35,13 +35,28 @@ def create_friend():
         else:
             img_url = None
 
-        new_user = User(name=name,gender=gender, score=score,  img_url=img_url)
+        new_user = User(name=name, gender=gender, score=score, img_url=img_url)
 
         db.session.add(new_user)
         db.session.commit()
 
         return jsonify(new_user.to_json()), 201
 
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+
+# Delete user
+@app.route("/api/users/<int:id>", methods=["DELETE"])
+def delete_user(id):
+    try:
+        user = User.query.get(id)
+        if user is None:
+            return jsonify({"error": "User not found"}), 404
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify({"msg": "User deleted"}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
